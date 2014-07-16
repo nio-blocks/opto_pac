@@ -1,6 +1,7 @@
 from socketserver import ThreadingMixIn, UDPServer, BaseRequestHandler
 from nio.common.block.base import Block
 from nio.common.discovery import Discoverable, DiscoverableType
+from nio.common.signal.base import Signal
 from nio.metadata.properties.int import IntProperty
 from nio.metadata.properties.string import StringProperty
 from nio.metadata.properties.list import ListProperty
@@ -161,7 +162,7 @@ class OptoPAC(Block):
                 sig_out[opto_in.title] = floats[opto_in.index]
 
         with self._collect_lock:
-            self._sigs_out.append(sig_out)
+            self._sigs_out.append(Signal(sig_out))
 
     def _notify_floats(self):
         with self._collect_lock:
