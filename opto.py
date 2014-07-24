@@ -7,8 +7,8 @@ from nio.metadata.properties.string import StringProperty
 from nio.metadata.properties.list import ListProperty
 from nio.metadata.properties.timedelta import TimeDeltaProperty
 from nio.metadata.properties.holder import PropertyHolder
-from nio.modules.threading.imports import spawn, Lock
-from nio.modules.scheduler.imports import Job
+from nio.modules.threading import spawn, Lock
+from nio.modules.scheduler import Job
 
 
 class ThreadedUDPServer(ThreadingMixIn, UDPServer):
