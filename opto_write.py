@@ -42,7 +42,9 @@ class OptoWriter(Block):
     def process_signals(self, signals):
         for sig in signals:
             try:
-                pack = self._build_packet(self.address(sig), self.write(sig))
+                pack = self._build_packet(
+                    self.prefix + self.address(sig) + self.suffix,
+                    self.write(sig))
                 self._send_packet(pack)
             except PACException as pace:
                 self._logger.warning(
@@ -53,6 +55,19 @@ class OptoWriter(Block):
                     .format(sig, type(e).__name__, e))
 
     def _build_packet(self, address, write):
+        """Build a packet to write data to a given memory map address.
+
+        Args:
+            address (str): a hex string (6 bytes) representing the full memory
+                map address to write to
+            write (str): a hex string (4 bytes) representing what to write
+
+        Returns:
+            None
+
+        Raises:
+            PACException: If the address or write arguments are malformed
+        """
         data = b''
 
         # destination_id - must be 0
@@ -68,8 +83,7 @@ class OptoWriter(Block):
         data += b'\x00\x00'
 
         # destination offset
-        d_off = bytearray.fromhex(
-            self.prefix + address + self.suffix)
+        d_off = bytearray.fromhex(address)
         if len(d_off) != 6:
             raise PACException(
                 "Destination offset data did not have length 6 : {0}"
@@ -95,7 +109,7 @@ class OptoWriter(Block):
 
     def _send_power_up_clear(self):
         """Send the PUC message the PAC needs to receive initially."""
-        self._send_packet(self._build_packet("F0380000", "00000001"))
+        self._send_packet(self._build_packet("FFFFF0380000", "00000001"))
 
     def _send_packet(self, packet, catch_exception=True):
         self._logger.debug("Sending packet : {0}".format(packet))
