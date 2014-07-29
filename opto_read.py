@@ -7,7 +7,7 @@ from nio.metadata.properties.string import StringProperty
 from nio.metadata.properties.list import ListProperty
 from nio.metadata.properties.holder import PropertyHolder
 from nio.modules.threading import spawn
-from ..mixins.collector import Collector
+from .mixins.collector.collector import Collector
 
 
 class ThreadedUDPServer(ThreadingMixIn, UDPServer):
