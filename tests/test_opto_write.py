@@ -35,3 +35,28 @@ class TestOptoWrite(NIOBlockTestCase):
             block.process_signals([signals[i % 2]])
             sleep(0.5)
         block.stop()
+
+    def test_convert_floats(self):
+        """Tests that floats get converted correctly."""
+        block = OptoWriter()
+        self.assertEqual(block._format_in_hex(0.0), '00000000')
+        self.assertEqual(block._format_in_hex(1.0), '3F800000')
+        self.assertEqual(block._format_in_hex(1.314), '3FA83127')
+        self.assertEqual(block._format_in_hex(2.0), '40000000')
+
+    def test_convert_ints(self):
+        """Tests that integers get converted correctly."""
+        block = OptoWriter()
+        self.assertEqual(block._format_in_hex(0), '00000000')
+        self.assertEqual(block._format_in_hex(1), '00000001')
+        self.assertEqual(block._format_in_hex(314314), '0004CBCA')
+
+        # can't do negative numbers, UNSIGNED int only
+        with self.assertRaises(ValueError):
+            block._format_in_hex(-1)
+
+    def test_convert_bools(self):
+        """Tests that booleans get converted correctly."""
+        block = OptoWriter()
+        self.assertEqual(block._format_in_hex(False), '00000000')
+        self.assertEqual(block._format_in_hex(True), 'FFFFFFFF')

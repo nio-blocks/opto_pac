@@ -1,4 +1,6 @@
 import socket
+import binascii
+import struct
 from nio.common.block.base import Block
 from nio.common.discovery import Discoverable, DiscoverableType
 from nio.metadata.properties.int import IntProperty
@@ -44,7 +46,7 @@ class OptoWriter(Block):
             try:
                 pack = self._build_packet(
                     self.prefix + self.address(sig) + self.suffix,
-                    self.write(sig))
+                    self._format_in_hex(self.write(sig)))
                 self._send_packet(pack)
             except PACException as pace:
                 self._logger.warning(
@@ -53,6 +55,38 @@ class OptoWriter(Block):
                 self._logger.error(
                     "Error processing signal {0} : {1} {2}"
                     .format(sig, type(e).__name__, e))
+
+    def _format_in_hex(self, val):
+        """ Takes a value and smartly convert it into hex, for the Opto.
+
+        This function will perform the following conversions:
+            float - convert using 32-bit IEEE standards
+            int - convert using 32-bit unsigned integer standards
+            bool - FFFFFFFF if True, 00000000 if False
+            * (anything else) - return the string
+
+        Args:
+            val: A value to convert to hex
+
+        Returns:
+            hex (str): An 8-character string containing hex values
+        """
+        if type(val).__name__ == 'float':
+            return binascii.hexlify(
+                struct.pack('f', val)[::-1]).decode('utf-8').upper()
+
+        if type(val).__name__ == 'int':
+            if val < 0:
+                raise ValueError("No negative integers allowed")
+            return '{0:08X}'.format(val)
+
+        if type(val).__name__ == 'bool':
+            if val:
+                return 'F' * 8
+            else:
+                return '0' * 8
+
+        return val
 
     def _build_packet(self, address, write):
         """Build a packet to write data to a given memory map address.
