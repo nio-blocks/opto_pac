@@ -34,7 +34,6 @@ class OptoWriter(Block):
     def configure(self, context):
         super().configure(context)
         try:
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._connect_socket()
         except Exception as e:
             self._logger.error(
@@ -135,6 +134,7 @@ class OptoWriter(Block):
 
     def _connect_socket(self):
         try:
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._socket.connect((self.host, self.port))
             self._send_power_up_clear()
         except Exception as e:
@@ -149,13 +149,17 @@ class OptoWriter(Block):
         self._logger.debug("Sending packet : {0}".format(packet))
         try:
             self._socket.sendall(packet)
-        except:
+        except Exception as e:
             if catch_exception:
-                self._logger.warning("Error sending packet, reconnecting...")
+                self._logger.warning("Error sending packet, reconnecting. Exception: {}".format(e))
+                
+                self._socket.shutdown(socket.SHUT_RDWR)
+                self._socket.close()
                 self._connect_socket()
                 self._send_packet(packet, False)
 
     def stop(self):
         if self._socket:
+            self._socket.shutdown(socket.SHUT_RDWR)
             self._socket.close()
         super().stop()
