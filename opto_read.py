@@ -14,7 +14,7 @@ from .mixins.collector.collector import Collector
 
 from .opto_data import convert_opto, format_str as opto_format_str
 import itertools
-
+import traceback
 
 class ThreadedUDPServer(ThreadingMixIn, UDPServer):
 
@@ -46,17 +46,20 @@ class OptoDataHandler(BaseRequestHandler):
             self.server.notifier(*pack)
 
     def _parse_packet(self, packet):
-        data = convert_opto(opto_format_str, packet, expected_len=524)
-        floats = data
-
-        floats = data[float_index: int_index]
-        ints = data[int_index: bool_index]
-        digitals = data[bool_index:]
-        # process bools
-        digitals = list(False if n == '0' else True
-                        for n in itertools.chain.from_iterable(map(bin_format, data)))
-
-        return [floats, ints, digitals]
+        try:
+            data = convert_opto(opto_format_str, packet, expected_len=524)
+            floats = data[float_index: int_index]
+            ints = data[int_index: bool_index]
+            digitals = data[bool_index:]
+            assert len(digitals) == 8
+            # process bools
+            digitals = list(False if n == '0' else True
+                            for n in itertools.chain.from_iterable(map(bin_format, digitals)))
+            return [floats, ints, digitals]
+        except Exception as E:
+            with open(r'C:\Users\niolab\Projects\old\optoout.log', 'a') as f:
+                f.write(traceback.format_exc() + '\n' + str(E) + '\n')
+            raise E
 
     def _read_floats(self, packet):
         """ Return 64 floats, converted as 32-bit IEEE floating point"""
