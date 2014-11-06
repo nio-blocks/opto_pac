@@ -14,6 +14,7 @@ from .mixins.collector.collector import Collector
 
 from .opto_data import convert_opto, format_str as opto_format_str
 from operator import itemgetter
+import math
 import itertools
 
 
@@ -51,10 +52,13 @@ class OptoDataHandler(BaseRequestHandler):
         floats = data[float_index: int_index]
         ints = data[int_index: bool_index]
         digitals = data[bool_index:]
-        assert len(digitals) == 8
-        # process bools
-        digitals = list(False if n == '0' else True
-                        for n in itertools.chain.from_iterable(map(bin_format, digitals)))
+
+        # process signals
+        isnan = math.isnan
+        floats = [None if isnan(f) else f for f in floats]
+        digitals = [False if n == '0' else True
+                        for n in itertools.chain.from_iterable(map(bin_format, digitals))]
+
         return [floats, ints, digitals]
 
 
@@ -111,29 +115,6 @@ class OptoReader(Collector, Block):
         if self._server:
             self._server.shutdown()
         super().stop()
-
-    def _set_dict_val(self, to_dict, from_list, index, key):
-        """Sets a value in a dictionary from a list of values.
-
-        Args:
-            to_dict (dict): The dict to write in to
-            from_list (list): The list to pull the value from
-            index (int): The index in the list to pull the value from
-            key (str): The key in the dictionary to insert into
-
-        Returns:
-            None: It will set the key in the dictionary
-
-        >>> d = dict()
-        >>> _set_dict_val(
-                to_dict=d,
-                from_list=['a', 'b', 'c'],
-                index=2,
-                key='name')
-        >>> assert d['name'] == 'c'
-        """
-        if index < len(from_list):
-            to_dict[key] = from_list[index]
 
     def _handle_input(self, floats, ints, digitals):
         """Receives a list of floats and returns dict based on configuration"""
