@@ -14,7 +14,7 @@ from .mixins.collector.collector import Collector
 
 from .opto_data import convert_opto, format_str as opto_format_str
 import itertools
-import traceback
+
 
 class ThreadedUDPServer(ThreadingMixIn, UDPServer):
 
@@ -46,91 +46,15 @@ class OptoDataHandler(BaseRequestHandler):
             self.server.notifier(*pack)
 
     def _parse_packet(self, packet):
-        try:
-            data = convert_opto(opto_format_str, packet, expected_len=524)
-            floats = data[float_index: int_index]
-            ints = data[int_index: bool_index]
-            digitals = data[bool_index:]
-            assert len(digitals) == 8
-            # process bools
-            digitals = list(False if n == '0' else True
-                            for n in itertools.chain.from_iterable(map(bin_format, digitals)))
-            return [floats, ints, digitals]
-        except Exception as E:
-            with open(r'C:\Users\niolab\Projects\old\optoout.log', 'a') as f:
-                f.write(traceback.format_exc() + '\n' + str(E) + '\n')
-            raise E
-
-    def _read_floats(self, packet):
-        """ Return 64 floats, converted as 32-bit IEEE floating point"""
-        # read 256 bytes of float data, 4 bytes at a time
-        floats = []
-        for i in range(64):
-            (next_float, packet) = self._read_bytes(packet, 4)
-            floats.append(self._ieee_bytes_to_float(next_float))
-        return (floats, packet)
-
-    def _ieee_bytes_to_float(self, float_bytes):
-        sign = float_bytes[0] >> 7
-        exp = ((float_bytes[0] & 0x7F) << 1) + (float_bytes[1] >> 7)
-        significand = int.from_bytes(float_bytes, byteorder='big') & 0x7FFFFF
-
-        return (-1)**sign * (1 + significand/(2**23)) * (2**(exp - 127))
-
-    def _read_ints(self, packet):
-        """ Return 64 integers, converted as unsigned 32-bit ints """
-        # read 256 bytes of int data, 4 bytes at a time
-        ints = []
-        for i in range(64):
-            (next_int, packet) = self._read_bytes(packet, 4)
-            ints.append(int.from_bytes(next_int, byteorder='big'))
-            #print(int.from_bytes(next_int, byteorder='big'))
-        return (ints, packet)
-
-    def _read_digitals(self, packet):
-        """ Return 64 booleans, representing the binary state of each bit """
-        (next_digi, packet) = self._read_bytes(packet, 8)
-
-        # Convert the hex bytes to a binary string (1s and 0s)
-        a = binascii.hexlify(next_digi)
-        my_bin_str = ''.join('{0:08b}'.format(
-            int(x, 16)) for x in (a[i:i+2] for i in range(0, len(a), 2)))
-
-        digitals = [(char == '1') for char in my_bin_str]
-
-        return (digitals, packet)
-
-    def _read_bytes(self, packet, num_bytes, intify=False):
-        """Take the first N bytes off a string and optionally parse them.
-
-        Given a packet string, take a specified number of bytes from the
-        beginning of the string. Returns a tuple containing the stripped off
-        bytes and the remainder of the original string.
-
-        Args:
-            packet (str): The string packet to read from
-            num_bytes (int): How many bytes to read
-            intify (bool): Whether to convert the read bytes to an integer
-                (defaults to False)
-
-        Returns:
-            (val, remain) (tuple): val contains the read value, remain contains
-                anything remaining on the string afterwards.
-
-        Raises:
-            IndexError: If the number of bytes to read is greater than the
-                length of the packet.
-        """
-        if num_bytes > len(packet):
-            raise IndexError
-
-        obj = packet[:num_bytes]
-        new_pack = packet[num_bytes:]
-
-        if intify:
-            return (int.from_bytes(obj, byteorder='big'), new_pack)
-        else:
-            return (obj, new_pack)
+        data = convert_opto(opto_format_str, packet, expected_len=524)
+        floats = data[float_index: int_index]
+        ints = data[int_index: bool_index]
+        digitals = data[bool_index:]
+        assert len(digitals) == 8
+        # process bools
+        digitals = list(False if n == '0' else True
+                        for n in itertools.chain.from_iterable(map(bin_format, digitals)))
+        return [floats, ints, digitals]
 
 
 class OptoInputType(Enum):
