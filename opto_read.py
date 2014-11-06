@@ -12,12 +12,21 @@ from nio.metadata.properties.holder import PropertyHolder
 from nio.modules.threading import spawn
 from .mixins.collector.collector import Collector
 
+from .opto_data import convert_opto, format_str as opto_format_str
+import itertools
+
 
 class ThreadedUDPServer(ThreadingMixIn, UDPServer):
 
     def __init__(self, server_address, handler_class, notifier):
         super().__init__(server_address, handler_class)
         self.notifier = notifier
+
+
+float_index = 3
+int_index = float_index + 64
+bool_index = int_index + 64
+bin_format = "{:0>8b}".format
 
 
 class OptoDataHandler(BaseRequestHandler):
@@ -30,38 +39,22 @@ class OptoDataHandler(BaseRequestHandler):
     """
 
     def handle(self):
-        data = self.request[0].strip()
-        #socket = self.request[1]
-        #client_addr = self.client_address[0]
+        data = self.request[0]
 
         pack = self._parse_packet(data)
         if pack and len(pack):
             self.server.notifier(*pack)
 
     def _parse_packet(self, packet):
-        floats = []
-        ints = []
-        digitals = []
-        try:
-            # Get total packet length
-            (packet_len, packet) = self._read_bytes(packet, 2, True)
+        data = convert_opto(opto_format_str, packet, expected_len=524)
+        floats = data
 
-            # Read zero-filled byte
-            (_, packet) = self._read_bytes(packet, 1)
-
-            # get transaction code
-            # 0x0A for an isochronous data block (4 bits) and synchronization
-            # code for Opto 22 use (4 bits)
-            (trans_code, packet) = self._read_bytes(packet, 1)
-
-            (floats, packet) = self._read_floats(packet)
-            (ints, packet) = self._read_ints(packet)
-            (digitals, packet) = self._read_digitals(packet)
-
-        except IndexError:
-            # malformed packet
-            print("Uh oh, bad packet")
-            print(packet)
+        floats = data[float_index: int_index]
+        ints = data[int_index: bool_index]
+        digitals = data[bool_index:]
+        # process bools
+        digitals = list(False if n == '0' else True
+                        for n in itertools.chain.from_iterable(map(bin_format, data)))
 
         return [floats, ints, digitals]
 
