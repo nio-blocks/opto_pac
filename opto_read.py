@@ -13,6 +13,7 @@ from nio.modules.threading import spawn
 from .mixins.collector.collector import Collector
 
 from .opto_data import convert_opto, format_str as opto_format_str
+from operator import itemgetter
 import itertools
 
 
@@ -85,6 +86,10 @@ class OptoReader(Collector, Block):
 
     def configure(self, context):
         super().configure(context)
+
+        # key, dtype, index
+        self._selections = tuple((o.title, o.type.value, o.index) for o in self.opto_inputs)
+
         try:
             self._server = ThreadedUDPServer(
                 (self.host, self.port),
@@ -135,11 +140,6 @@ class OptoReader(Collector, Block):
         sig_out = dict()
         source_lists = [floats, ints, digitals]
 
-        for opto_in in self.opto_inputs:
-            self._set_dict_val(
-                to_dict=sig_out,
-                from_list=source_lists[opto_in.type.value],
-                index=opto_in.index,
-                key=opto_in.title)
+        sig_out = {key: source_lists[dtype][index] for (key, dtype, index) in self._selections if index < 64}
 
         self.notify_signals([Signal(sig_out)])
