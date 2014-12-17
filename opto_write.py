@@ -25,21 +25,25 @@ class OptoWriter(Block):
 
     host = StringProperty(title="Opto Host", default="10.0.0.1")
     port = IntProperty(title="Opto Port", default=2001)
+    timeout = IntProperty(title="Connection Timeout", default=5)
     prefix = StringProperty(title="Memory Map Hex Prefix", default="FFFF")
     suffix = StringProperty(title="Memory Map Hex Suffix", default="")
 
     address = ExpressionProperty(default='F0260000', title='Address of Output')
     write = ExpressionProperty(default='FFFFFFFF', title='What to write')
 
+    def __init__(self):
+        super().__init__()
+        self._socket = None
+
     def configure(self, context):
         super().configure(context)
-        try:
-            self._connect_socket()
-        except Exception as e:
-            self._logger.error(
-                "Failed to create connection - {0} : {1}".format(
-                    type(e).__name__, e))
-
+        self._connect_socket()
+        if self._socket is None:
+            raise ConnectionError(
+                "OptoWriter failure connecting to host {}:{}".format(
+                    self.host, self.port))
+        
     def process_signals(self, signals):
         for sig in signals:
             try:
@@ -134,9 +138,17 @@ class OptoWriter(Block):
 
     def _connect_socket(self):
         try:
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._socket.connect((self.host, self.port))
+            self._socket = socket.create_connection((self.host, self.port),
+                                                    self.timeout)
             self._send_power_up_clear()
+        except socket.timeout as e:
+            self._logger.error(
+                "Connection to host {}:{} timed out".format(self.host, self.port)
+            )
+        except ConnectionRefusedError as e:
+            self._logger.error(
+                "Connection to host {}:{} was refused".format(self.host, self.port)
+            )
         except Exception as e:
             self._logger.error(
                 "Failed to connect - {0} : {1}".format(type(e).__name__, e))
