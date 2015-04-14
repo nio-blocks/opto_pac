@@ -171,6 +171,9 @@ class OptoWriter(Block):
         try:
             # Attempt to shut down the socket gracefully
             self._socket.shutdown(socket.SHUT_RDWR)
+        except:
+            self._logger.warning("Failed to shutdown socket. Closing anyway.",
+                                 exc_info=True)
         finally:
             self._socket.close()
 
