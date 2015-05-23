@@ -4,6 +4,7 @@ import struct
 from nio.common.block.base import Block
 from nio.common.discovery import Discoverable, DiscoverableType
 from nio.metadata.properties.int import IntProperty
+from nio.metadata.properties.version import VersionProperty
 from nio.metadata.properties.string import StringProperty
 from nio.metadata.properties.expression import ExpressionProperty
 from nio.metadata.properties.holder import PropertyHolder
@@ -31,6 +32,8 @@ class OptoWriter(Block):
 
     address = ExpressionProperty(default='F0260000', title='Address of Output')
     write = ExpressionProperty(default='FFFFFFFF', title='What to write')
+
+    version = VersionProperty('1.0.0')
 
     def __init__(self):
         super().__init__()

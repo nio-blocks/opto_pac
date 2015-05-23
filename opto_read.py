@@ -5,6 +5,7 @@ from nio.common.block.base import Block
 from nio.common.discovery import Discoverable, DiscoverableType
 from nio.common.signal.base import Signal
 from nio.metadata.properties.int import IntProperty
+from nio.metadata.properties.version import VersionProperty
 from nio.metadata.properties.string import StringProperty
 from nio.metadata.properties.select import SelectProperty
 from nio.metadata.properties.list import ListProperty
@@ -83,6 +84,7 @@ class OptoReader(Collector, Block):
     host = StringProperty(title="Listener Host", default="127.0.0.1")
     port = IntProperty(title="Listener Port", default=5005)
     opto_inputs = ListProperty(OptoInput, title="Input Mappings")
+    version = VersionProperty('1.0.0')
 
     def __init__(self):
         super().__init__()
