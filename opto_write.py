@@ -4,6 +4,7 @@ import struct
 from nio.common.block.base import Block
 from nio.common.discovery import Discoverable, DiscoverableType
 from nio.metadata.properties.int import IntProperty
+from nio.metadata.properties.version import VersionProperty
 from nio.metadata.properties.string import StringProperty
 from nio.metadata.properties.expression import ExpressionProperty
 from nio.metadata.properties.holder import PropertyHolder
@@ -32,6 +33,8 @@ class OptoWriter(Block):
     address = ExpressionProperty(default='F0260000', title='Address of Output')
     write = ExpressionProperty(default='FFFFFFFF', title='What to write')
 
+    version = VersionProperty('1.0.0')
+
     def __init__(self):
         super().__init__()
         self._socket = None
@@ -43,7 +46,7 @@ class OptoWriter(Block):
             raise ConnectionError(
                 "OptoWriter failure connecting to host {}:{}".format(
                     self.host, self.port))
-        
+
     def process_signals(self, signals):
         for sig in signals:
             try:
@@ -54,10 +57,9 @@ class OptoWriter(Block):
             except PACException as pace:
                 self._logger.warning(
                     "Could not build packet for {0} : {1}".format(sig, pace))
-            except Exception as e:
-                self._logger.error(
-                    "Error processing signal {0} : {1} {2}"
-                    .format(sig, type(e).__name__, e))
+            except Exception:
+                self._logger.exception(
+                    "Error processing signal {0}".format(sig))
 
     def _format_in_hex(self, val):
         """ Takes a value and smartly convert it into hex, for the Opto.
@@ -141,17 +143,16 @@ class OptoWriter(Block):
             self._socket = socket.create_connection((self.host, self.port),
                                                     self.timeout)
             self._send_power_up_clear()
-        except socket.timeout as e:
-            self._logger.error(
-                "Connection to host {}:{} timed out".format(self.host, self.port)
-            )
-        except ConnectionRefusedError as e:
-            self._logger.error(
-                "Connection to host {}:{} was refused".format(self.host, self.port)
-            )
-        except Exception as e:
-            self._logger.error(
-                "Failed to connect - {0} : {1}".format(type(e).__name__, e))
+        except socket.timeout:
+            self._logger.exception(
+                "Connection to host {}:{} timed out".format(
+                    self.host, self.port))
+        except ConnectionRefusedError:
+            self._logger.exception(
+                "Connection to host {}:{} was refused".format(
+                    self.host, self.port))
+        except:
+            self._logger.exception("Failed to connect")
 
     def _send_power_up_clear(self):
         """Send the PUC message the PAC needs to receive initially."""
@@ -161,17 +162,25 @@ class OptoWriter(Block):
         self._logger.debug("Sending packet : {0}".format(packet))
         try:
             self._socket.sendall(packet)
-        except Exception as e:
+        except Exception:
             if catch_exception:
-                self._logger.warning("Error sending packet, reconnecting. Exception: {}".format(e))
-                
-                self._socket.shutdown(socket.SHUT_RDWR)
-                self._socket.close()
+                self._logger.warning("Error sending packet, reconnecting.",
+                                     exc_info=True)
+                self._close_socket()
                 self._connect_socket()
                 self._send_packet(packet, False)
 
+    def _close_socket(self):
+        try:
+            # Attempt to shut down the socket gracefully
+            self._socket.shutdown(socket.SHUT_RDWR)
+        except:
+            self._logger.warning("Failed to shutdown socket. Closing anyway.",
+                                 exc_info=True)
+        finally:
+            self._socket.close()
+
     def stop(self):
         if self._socket:
-            self._socket.shutdown(socket.SHUT_RDWR)
-            self._socket.close()
+            self._close_socket()
         super().stop()
