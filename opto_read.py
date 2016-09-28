@@ -1,16 +1,16 @@
 from enum import Enum
 from socketserver import ThreadingMixIn, UDPServer, BaseRequestHandler
-from nio.common.block.base import Block
-from nio.common.discovery import Discoverable, DiscoverableType
-from nio.common.signal.base import Signal
-from nio.metadata.properties.int import IntProperty
-from nio.metadata.properties.version import VersionProperty
-from nio.metadata.properties.string import StringProperty
-from nio.metadata.properties.select import SelectProperty
-from nio.metadata.properties.list import ListProperty
-from nio.metadata.properties.holder import PropertyHolder
-from nio.modules.threading import spawn
-from .mixins.collector.collector import Collector
+from nio.block.base import Block
+from nio.util.discovery import discoverable
+from nio.signal.base import Signal
+from nio.properties.int import IntProperty
+from nio.properties.version import VersionProperty
+from nio.properties.string import StringProperty
+from nio.properties.select import SelectProperty
+from nio.properties.list import ListProperty
+from nio.properties.holder import PropertyHolder
+from nio.util.threading.spawn import spawn
+from nio.block.mixins.collector.collector import Collector
 
 from .opto_data import convert_opto, format_str as opto_format_str
 import math
@@ -78,7 +78,7 @@ class OptoInput(PropertyHolder):
         OptoInputType, default=OptoInputType.FLOAT, title='Input Type')
 
 
-@Discoverable(DiscoverableType.block)
+@discoverable
 class OptoReader(Collector, Block):
 
     """ A block for connecting to and reading from the Opto22 PAC """
@@ -97,16 +97,16 @@ class OptoReader(Collector, Block):
 
         # key, dtype, index
         self._selections = tuple(
-            (o.title, o.type.value, o.index)
-            for o in self.opto_inputs)
+            (o.title(), o.type().value, o.index())
+            for o in self.opto_inputs())
 
         try:
             self._server = ThreadedUDPServer(
-                (self.host, self.port),
+                (self.host(), self.port()),
                 OptoDataHandler,
                 self._handle_input)
         except Exception as e:
-            self._logger.error(
+            self.logger.error(
                 "Failed to create server - {0} : {1}".format(
                     type(e).__name__, e))
 
@@ -115,7 +115,7 @@ class OptoReader(Collector, Block):
         if self._server:
             spawn(self._server.serve_forever)
         else:
-            self._logger.warning("Server did not exist, so it was not started")
+            self.logger.warning("Server did not exist, so it was not started")
 
     def stop(self):
         if self._server:
