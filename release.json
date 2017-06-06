@@ -1,0 +1,12 @@
+{
+  "nio/OptoReader": {
+    "Language": "Python",
+    "Version": "1.0.0",
+    "Reference": "github.com/nio-blocks/opto_pac.git@v1.0.0"
+  },
+  "nio/OptoWriter": {
+    "Language": "Python",
+    "Version": "1.0.0",
+    "Reference": "github.com/nio-blocks/opto_pac.git@v1.0.0"
+  }
+}
