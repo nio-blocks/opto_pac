@@ -1,18 +1,96 @@
 {
   "nio/OptoReader": {
-    "version": "0.0.1",
-    "description": "",
+    "version": "1.0.0",
+    "description": "Receive and process streaming data (via UDP) from the Opto. This block will launch a UDP server that the Opto will send it's streaming packets to. Then, based on its configuration, the block will notify signals corresponding to data points within the streaming packet. Currently, the block will **not** notify the Opto of where to stream its data. Therefore, the Opto will most likely have to be configured to point its streaming target to the server launched by this block.",
+    "properties": {
+      "collect": {
+        "title": "Collect Timeout",
+        "type": "TimeDeltaType",
+        "description": "The optional buffering period for high volumes. See the [Collector Mixin](https://github.com/nio-blocks/mixins/tree/master/collector) for more details",
+        "default": {
+          "seconds": 1
+        }
+      },
+      "host": {
+        "title": "Listener Host",
+        "type": "StringType",
+        "description": "IP Address to bind the host UDP server to",
+        "default": "127.0.0.1"
+      },
+      "opto_inputs": {
+        "title": "Input Mappings",
+        "type": "ListType",
+        "description": "A list of inputs to include in the resulting signal. **title**: The key on the resulting signal to place this input's value on. **type**: The type of value to read. This determines both the conversion function as well as which block of the streaming packet to read from.",
+        "default": []
+      },
+      "port": {
+        "title": "Listener Port",
+        "type": "IntType",
+        "description": "Integer port number to bind the host UDP server to",
+        "default": 5005
+      }
+    },
     "inputs": {},
-    "outputs": {},
-    "properties": {},
+    "outputs": {
+      "default": {
+        "description": "One signal per streamed UDP packet. The signal will contain the attributes defined in the **opto_inputs** configuration and nothing more. Float attributes will be represented as a float type. Integer attributes will be represented as an int type. Digital attributes will be represented as a bool type, True if the digital signal is `HIGH`, False if `LOW`."
+      }
+    },
     "commands": {}
   },
   "nio/OptoWriter": {
-    "version": "0.0.1",
-    "description": "",
-    "inputs": {},
+    "version": "1.0.0",
+    "description": " A block for connecting to and writing to the Opto22 PAC ",
+    "properties": {
+      "address": {
+        "title": "Address of Output",
+        "type": "Type",
+        "description": "Address to send data to.",
+        "default": "F0260000"
+      },
+      "host": {
+        "title": "Opto Host",
+        "type": "StringType",
+        "description": "IP address of the Opto Host.",
+        "default": "10.0.0.1"
+      },
+      "port": {
+        "title": "Opto Port",
+        "type": "IntType",
+        "description": "Integer port number of the Opto Host.",
+        "default": 2001
+      },
+      "prefix": {
+        "title": "Memory Map Hex Prefix",
+        "type": "StringType",
+        "description": "Memory Map Hex Prefix",
+        "default": "FFFF"
+      },
+      "suffix": {
+        "title": "Memory Map Hex Suffix",
+        "type": "StringType",
+        "description": "Memory Map Hex Suffix",
+        "default": ""
+      },
+      "timeout": {
+        "title": "Connection Timeout",
+        "type": "IntType",
+        "description": "Timeout for connection to the Opto Host.",
+        "default": 5
+      },
+      "write": {
+        "title": "What to write",
+        "type": "Type",
+        "description": "Data to write to the Opto Host.",
+        "default": "FFFFFFFF"
+      }
+    },
+    "inputs": {
+      "default": {
+        "description": "Any list of signals."
+      }
+    },
     "outputs": {},
-    "properties": {},
     "commands": {}
   }
 }
