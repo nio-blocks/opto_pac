@@ -45,7 +45,7 @@
       "address": {
         "title": "Address of Output",
         "type": "Type",
-        "description": "",
+        "description": "Address to send data to.",
         "default": "F0260000"
       },
       "host": {

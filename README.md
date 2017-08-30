@@ -49,7 +49,7 @@ OptoWriter
 
 Properties
 ----------
-- **address**: 
+- **address**: Address to send data to.
 - **host**: IP address of the Opto Host.
 - **port**: Integer port number of the Opto Host.
 - **prefix**: Memory Map Hex Prefix
