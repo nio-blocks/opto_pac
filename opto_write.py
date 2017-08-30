@@ -1,26 +1,17 @@
 import socket
 import binascii
 import struct
-from nio.block.base import Block
-from nio.util.discovery import discoverable
-from nio.properties.int import IntProperty
-from nio.properties.version import VersionProperty
-from nio.properties.string import StringProperty
-from nio.properties import Property
-from nio.properties.holder import PropertyHolder
 
+from nio import TerminatorBlock
+from nio.properties import (IntProperty, VersionProperty, StringProperty,
+                            Property)
 
-# class OptoOutput(PropertyHolder):
-#     address = Property(default='F0260000', title='Address of Output')
-#     write = Property(default='FFFFFFFF', title='What to write')
-#
 
 class PACException(Exception):
     pass
 
 
-@discoverable
-class OptoWriter(Block):
+class OptoWriter(TerminatorBlock):
 
     """ A block for connecting to and writing to the Opto22 PAC """
 
@@ -165,7 +156,7 @@ class OptoWriter(Block):
         except Exception:
             if catch_exception:
                 self.logger.warning("Error sending packet, reconnecting.",
-                                     exc_info=True)
+                                    exc_info=True)
                 self._close_socket()
                 self._connect_socket()
                 self._send_packet(packet, False)
@@ -176,7 +167,7 @@ class OptoWriter(Block):
             self._socket.shutdown(socket.SHUT_RDWR)
         except:
             self.logger.warning("Failed to shutdown socket. Closing anyway.",
-                                 exc_info=True)
+                                exc_info=True)
         finally:
             self._socket.close()
 

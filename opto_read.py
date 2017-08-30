@@ -1,20 +1,16 @@
-from enum import Enum
-from socketserver import ThreadingMixIn, UDPServer, BaseRequestHandler
-from nio.block.base import Block
-from nio.util.discovery import discoverable
-from nio.signal.base import Signal
-from nio.properties.int import IntProperty
-from nio.properties.version import VersionProperty
-from nio.properties.string import StringProperty
-from nio.properties.select import SelectProperty
-from nio.properties.list import ListProperty
-from nio.properties.holder import PropertyHolder
-from nio.util.threading.spawn import spawn
-from nio.block.mixins.collector.collector import Collector
-
-from .opto_data import convert_opto, format_str as opto_format_str
 import math
 import itertools
+from enum import Enum
+from socketserver import ThreadingMixIn, UDPServer, BaseRequestHandler
+
+from nio import GeneratorBlock
+from nio.signal.base import Signal
+from nio.properties import (IntProperty, VersionProperty, StringProperty,
+                            SelectProperty, ListProperty, PropertyHolder)
+from nio.util.threading.spawn import spawn
+from nio.block.mixins import Collector
+
+from .opto_data import convert_opto, format_str as opto_format_str
 
 
 class ThreadedUDPServer(ThreadingMixIn, UDPServer):
@@ -78,8 +74,7 @@ class OptoInput(PropertyHolder):
         OptoInputType, default=OptoInputType.FLOAT, title='Input Type')
 
 
-@discoverable
-class OptoReader(Collector, Block):
+class OptoReader(Collector, GeneratorBlock):
 
     """ A block for connecting to and reading from the Opto22 PAC """
 
@@ -124,7 +119,6 @@ class OptoReader(Collector, Block):
 
     def _handle_input(self, floats, ints, digitals):
         """Receives a list of floats and returns dict based on configuration"""
-        sig_out = dict()
         source_lists = [floats, ints, digitals]
 
         sig_out = {
