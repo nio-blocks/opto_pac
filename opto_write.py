@@ -24,7 +24,7 @@ class OptoWriter(TerminatorBlock):
     address = Property(default='F0260000', title='Address of Output')
     write = Property(default='FFFFFFFF', title='What to write')
 
-    version = VersionProperty('1.0.0')
+    version = VersionProperty("1.0.0")
 
     def __init__(self):
         super().__init__()
