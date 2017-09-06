@@ -2,6 +2,9 @@
   "nio/OptoReader": {
     "version": "1.0.0",
     "description": "Receive and process streaming data (via UDP) from the Opto. This block will launch a UDP server that the Opto will send it's streaming packets to. Then, based on its configuration, the block will notify signals corresponding to data points within the streaming packet. Currently, the block will **not** notify the Opto of where to stream its data. Therefore, the Opto will most likely have to be configured to point its streaming target to the server launched by this block.",
+    "categories": [
+      "Hardware"
+    ],
     "properties": {
       "collect": {
         "title": "Collect Timeout",
@@ -41,6 +44,9 @@
   "nio/OptoWriter": {
     "version": "1.0.0",
     "description": " A block for connecting to and writing to the Opto22 PAC ",
+    "categories": [
+      "Hardware"
+    ],
     "properties": {
       "address": {
         "title": "Address of Output",
