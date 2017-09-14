@@ -9,7 +9,7 @@
       "collect": {
         "title": "Collect Timeout",
         "type": "TimeDeltaType",
-        "description": "The optional buffering period for high volumes. See the [Collector Mixin](https://github.com/nio-blocks/mixins/tree/master/collector) for more details",
+        "description": "The optional buffering period for high volumes. See the [Collector Mixin](https://github.com/niolabs/nio/blob/master/nio/block/mixins/collector/collector.py) for more details",
         "default": {
           "seconds": 1
         }
