@@ -4,7 +4,7 @@ Receive and process streaming data (via UDP) from the Opto. This block will laun
 
 Properties
 ----------
-- **collect**: The optional buffering period for high volumes. See the [Collector Mixin](https://github.com/nio-blocks/mixins/tree/master/collector) for more details
+- **collect**: The optional buffering period for high volumes. See the [Collector Mixin](https://github.com/niolabs/nio/blob/master/nio/block/mixins/collector/collector.py) for more details
 - **host**: IP Address to bind the host UDP server to
 - **opto_inputs**: A list of inputs to include in the resulting signal. **title**: The key on the resulting signal to place this input's value on. **type**: The type of value to read. This determines both the conversion function as well as which block of the streaming packet to read from.
 - **port**: Integer port number to bind the host UDP server to
