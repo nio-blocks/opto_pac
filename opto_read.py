@@ -81,7 +81,7 @@ class OptoReader(Collector, GeneratorBlock):
     host = StringProperty(title="Listener Host", default="127.0.0.1")
     port = IntProperty(title="Listener Port", default=5005)
     opto_inputs = ListProperty(OptoInput, title="Input Mappings")
-    version = VersionProperty("1.0.0")
+    version = VersionProperty("1.0.1")
 
     def __init__(self):
         super().__init__()

@@ -2,7 +2,7 @@
   "nio/OptoReader": {
     "language": "Python",
     "url": "git://github.com/nio-blocks/opto_pac.git",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "nio/OptoWriter": {
     "language": "Python",
